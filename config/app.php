@@ -86,6 +86,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Security Mode (Demo)
+    |--------------------------------------------------------------------------
+    |
+    | This setting controls demo security mode. Use APP_SECURITY_MODE in .env
+    | with values 'vulnerable' or 'secure'. Default is 'secure'.
+    |
+    */
+    'security_mode' => env('APP_SECURITY_MODE', 'secure'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
