@@ -1,23 +1,34 @@
-FROM php:8.2-cli
+FROM node:20-alpine AS node_builder
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --silent
+COPY . .
+RUN npm run build
 
+FROM php:8.2-cli
 WORKDIR /app
 
-# Copy source code
-COPY . .
-
-# Cài extension cần thiết
+# System deps
 RUN apt-get update && apt-get install -y \
-    unzip curl libzip-dev zip \
-    && docker-php-ext-install zip pdo pdo_mysql
+    unzip curl libzip-dev zip git \
+    && docker-php-ext-install zip pdo pdo_mysql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Cài Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Cài dependency Laravel
-RUN composer install
+# Copy application source
+COPY . .
 
-# Mở port
+# Copy built frontend assets from node builder
+COPY --from=node_builder /app/public/build /app/public/build
+
+# Install PHP deps
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Entrypoint takes care of storage link and permissions
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 8000
-
-# Chạy Laravel
-CMD php artisan serve --host=0.0.0.0 --port=8000
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

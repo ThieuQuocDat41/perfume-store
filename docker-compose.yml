@@ -5,9 +5,10 @@ services:
     build: .
     container_name: perfume-app
     ports:
-      - "80:8000"   # 👈 đổi sang port 80
+      - "80:8000"   # map host port 80 to container 8000
     volumes:
-      - .:/app
+      - vendor:/app/vendor
+      - storage:/app/storage
     depends_on:
       - db
 
@@ -21,7 +22,9 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - db_data:/var/lib/mysql   # 👈 giữ dữ liệu
-
+      - db_data:/var/lib/mysql   # persistent DB data
+  
 volumes:
   db_data:
+  vendor:
+  storage:
