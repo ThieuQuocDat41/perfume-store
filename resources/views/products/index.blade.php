@@ -4,7 +4,7 @@
 
 <!-- HERO -->
 <section class="relative h-[700px]">
-    <img src="/storage/products/glhero.jpeg"
+    <img src="/products/glhero.jpeg"
         class="absolute w-full h-full object-cover">
 
     <div class="absolute inset-0 bg-black/40"></div>
@@ -38,7 +38,7 @@
 
     <!-- BIG -->
     <div class="col-span-8 relative group overflow-hidden rounded-lg">
-        <img src="/storage/products/collection-floral.jpeg"
+        <img src="/products/collection-floral.jpeg"
              class="w-full h-[400px] object-cover transition duration-500 group-hover:scale-110">
 
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -53,7 +53,7 @@
 
         <!-- WOODY -->
         <div class="relative group overflow-hidden rounded-lg">
-              <img src="/storage/products/collection-woody.jpg"
+                  <img src="/products/collection-woody.jpg"
                  class="h-[190px] w-full object-cover transition duration-500 group-hover:scale-110">
 
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -65,7 +65,7 @@
 
         <!-- ORIENTAL -->
         <div class="relative group overflow-hidden rounded-lg">
-              <img src="/storage/products/collection-oriental.jpg"
+                  <img src="/products/collection-oriental.jpg"
                  class="h-[190px] w-full object-cover transition duration-500 group-hover:scale-110">
 
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -107,7 +107,7 @@
     <div class="relative aspect-[3/4] overflow-hidden rounded-lg">
 
             <img 
-            src="{{ $product->image ? (Illuminate\Support\Str::startsWith($product->image, ['http://','https://']) ? $product->image : '/storage/products/' . urlencode($product->image)) : '/storage/products/hero.jpeg' }}"
+            src="{{ $product->image ? (Illuminate\Support\Str::startsWith($product->image, ['http://','https://']) ? $product->image : '/products/' . urlencode($product->image)) : '/products/hero.jpeg' }}"
             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             alt="{{ $product->name }}"
         >

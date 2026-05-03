@@ -1,3 +1,4 @@
+dir /a
 #!/bin/sh
 set -e
 
