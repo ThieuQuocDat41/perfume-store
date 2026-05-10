@@ -2,251 +2,269 @@
 
 @section('content')
 
-<div class="max-w-[1440px] mx-auto px-10 py-16">
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
 
-    <!-- GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        {{-- Gallery: Single Main Image --}}
+        <div class="lg:col-span-4">
+            @php
+                $imgs = is_array($product->images)
+                    ? $product->images
+                    : (json_decode($product->images, true) ?: []);
+                $mainImg = $imgs[0] ?? asset('images/placeholder.png');
+            @endphp
 
-<!-- LEFT: IMAGE -->
-<div class="lg:col-span-7">
-
-    <!-- MAIN IMAGE -->
-    <div class="relative">
-        <img 
-            src="{{ $product->image ? asset('storage/products/' . urlencode($product->image)) : asset('storage/products/hero.jpeg') }}"
-            class="w-full h-full object-cover"
-        >
-
-        @if(auth()->check() && auth()->user()->role === 'admin')
-            <form id="image-upload-form" action="{{ url('/products/'.$product->id.'/image') }}" method="POST" enctype="multipart/form-data" class="hidden">
-                @csrf
-                <input type="file" name="image" id="product-image-input" accept="image/*">
-            </form>
-
-            <button id="edit-image-btn" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow" title="Edit image">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z" /></svg>
-            </button>
-        @endif
-    </div>
-    <!-- SUB IMAGES -->
-    <div class="grid grid-cols-2 gap-4 mt-4">
-        <div class="relative">
-            <img 
-                src="{{ $product->sub_image_1 ? asset('storage/products/' . urlencode($product->sub_image_1)) : ($product->image ? asset('storage/products/' . urlencode($product->image)) : asset('storage/products/hero.jpeg')) }}"
-                class="rounded-lg object-cover w-full h-40"
-            >
-
-            @if(auth()->check() && auth()->user()->role === 'admin')
-                <form id="sub1-upload-form" action="{{ url('/products/'.$product->id.'/image') }}" method="POST" enctype="multipart/form-data" class="hidden">
-                    @csrf
-                    <input type="hidden" name="slot" value="sub1">
-                    <input type="file" name="image" id="product-sub1-input" accept="image/*">
-                </form>
-
-                <button data-slot="sub1" class="edit-sub-btn absolute top-2 right-2 bg-white rounded-full p-2 shadow" title="Edit image">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z" /></svg>
-                </button>
-            @endif
-        </div>
-
-        <div class="relative">
-            <img 
-                src="{{ $product->sub_image_2 ? asset('storage/products/' . urlencode($product->sub_image_2)) : ($product->image ? asset('storage/products/' . urlencode($product->image)) : asset('storage/products/hero.jpeg')) }}"
-                class="rounded-lg object-cover w-full h-40"
-            >
-
-            @if(auth()->check() && auth()->user()->role === 'admin')
-                <form id="sub2-upload-form" action="{{ url('/products/'.$product->id.'/image') }}" method="POST" enctype="multipart/form-data" class="hidden">
-                    @csrf
-                    <input type="hidden" name="slot" value="sub2">
-                    <input type="file" name="image" id="product-sub2-input" accept="image/*">
-                </form>
-
-                <button data-slot="sub2" class="edit-sub-btn absolute top-2 right-2 bg-white rounded-full p-2 shadow" title="Edit image">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z" /></svg>
-                </button>
-            @endif
-        </div>
-    </div>
-
-</div>
-
-        <!-- RIGHT: INFO -->
-        <div class="lg:col-span-5 space-y-8">
-
-            <div>
-                <p class="uppercase tracking-widest text-gray-500 text-xs">
-                    {{ $product->brand ?? 'Luxury Brand' }}
-                </p>
-
-                <h1 class="text-4xl font-serif mt-2">
-                    {{ $product->name }}
-                </h1>
-
-                <p class="text-2xl text-yellow-600 font-serif mt-2">
-                    ${{ $product->price }}
-                </p>
-
-                <p class="text-green-600 text-sm mt-2">
-                    ✔ Còn hàng ({{ $product->stock }})
-                </p>
+            <div class="overflow-hidden rounded-lg bg-gray-50 aspect-[4/5] group cursor-zoom-in">
+                <img
+                    src="{{ $mainImg }}"
+                    alt="{{ $product->name }}"
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                >
             </div>
+        </div>
 
-            <p class="text-gray-600">
-                {{ $product->description }}
+        {{-- Product Info --}}
+        <div class="lg:col-span-5 space-y-6">
+
+            {{-- Brand --}}
+            <p class="uppercase tracking-widest text-gray-400 text-xs font-semibold">
+                {{ $product->brand ?? 'Maison de Élégance' }}
             </p>
 
-            <!-- TAG -->
+            {{-- Name --}}
+            <h1 class="text-4xl font-serif leading-tight">{{ $product->name }}</h1>
+
+            {{-- Price & Stock --}}
+            <div class="flex items-center gap-4">
+                <div class="text-3xl text-yellow-600 font-serif">
+                    ${{ number_format($product->price_usd ?? 0, 2) }}
+                </div>
+                <span class="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-medium flex items-center gap-1">
+                    In Stock &amp; Ready to Ship
+                </span>
+            </div>
+
+            {{-- Description --}}
+            <div class="text-gray-600 leading-relaxed text-sm">
+                {!! nl2br(e($product->short_description)) !!}
+            </div>
+
+            {{-- Scent Tags --}}
+            @if($product->top_notes || $product->heart_notes || $product->base_notes)
+            <div class="flex flex-wrap gap-2">
+                @foreach(array_filter(explode(',', $product->top_notes ?? '')) as $tag)
+                    <span class="px-3 py-1 rounded-full border border-gray-300 text-xs text-gray-600">{{ trim($tag) }}</span>
+                @endforeach
+                @foreach(array_filter(explode(',', $product->heart_notes ?? '')) as $tag)
+                    <span class="px-3 py-1 rounded-full border border-gray-300 text-xs text-gray-600">{{ trim($tag) }}</span>
+                @endforeach
+                @foreach(array_filter(explode(',', $product->base_notes ?? '')) as $tag)
+                    <span class="px-3 py-1 rounded-full border border-gray-300 text-xs text-gray-600">{{ trim($tag) }}</span>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- Volume Selector --}}
             <div>
-                @php
-                    $allTags = ['Floral','Woody','Luxury'];
-                    $productTags = is_array($product->tags) ? $product->tags : (json_decode($product->tags, true) ?: []);
-                @endphp
-
-                @if(auth()->check() && auth()->user()->role === 'admin')
-                    <form action="{{ url('/products/'.$product->id.'/tags') }}" method="POST">
-                        @csrf
-                        <div class="flex gap-2 flex-wrap">
-                            @foreach($allTags as $t)
-                                <label class="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full text-sm cursor-pointer">
-                                    <input type="checkbox" name="tags[]" value="{{ $t }}" class="mr-2" {{ in_array($t, $productTags) ? 'checked' : '' }}>
-                                    {{ $t }}
-                                </label>
-                            @endforeach
-                        </div>
-                        <button class="mt-2 px-3 py-1 bg-yellow-500 text-white text-sm">Save tags</button>
-                    </form>
-                @else
-                    <div class="flex gap-2 flex-wrap">
-                        @foreach($productTags as $t)
-                            <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">{{ $t }}</span>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-
-            <!-- VOLUME -->
-            <div>
-                <p class="text-sm uppercase tracking-widest mb-2">Dung tích</p>
-
-                <form action="/cart/add/{{ $product->id }}" method="POST">
-                    @csrf
-                    <div class="flex gap-3 items-center">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="volume" value="50ML" class="mr-2" {{ old('volume') == '50ML' ? 'checked' : '' }}>
-                            50ML
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="volume" value="100ML" class="mr-2" {{ old('volume', '100ML') == '100ML' ? 'checked' : '' }}>
-                            100ML
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="volume" value="200ML" class="mr-2" {{ old('volume') == '200ML' ? 'checked' : '' }}>
-                            200ML
-                        </label>
-                    </div>
-
-                    <!-- ADD TO CART -->
-                    <div class="mt-4">
-                        <button class="w-full py-4 bg-yellow-500 text-white uppercase tracking-widest hover:bg-yellow-600 transition">
-                            Add to Cart
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- WISHLIST -->
-
-
-        </div>
-    </div>
-
-    <!-- OLFACTORY -->
-    <div class="mt-24">
-        <h2 class="text-3xl font-serif text-center mb-10">
-            Olfactory Profile
-        </h2>
-
-        <div class="grid md:grid-cols-3 gap-6">
-
-            <div class="p-6 bg-gray-100 rounded-lg text-center">
-                <h3 class="font-serif italic">Top Notes</h3>
-                <p class="text-sm text-gray-600">Bergamot, Citrus</p>
-            </div>
-
-            <div class="p-6 bg-gray-100 rounded-lg text-center">
-                <h3 class="font-serif italic">Heart Notes</h3>
-                <p class="text-sm text-gray-600">Rose, Jasmine</p>
-            </div>
-
-            <div class="p-6 bg-gray-100 rounded-lg text-center">
-                <h3 class="font-serif italic">Base Notes</h3>
-                <p class="text-sm text-gray-600">Musk, Vanilla</p>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- RELATED -->
-    <div class="mt-24">
-        <h2 class="text-2xl font-serif mb-6">
-            You May Also Like
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-            @foreach($related as $item)
-
-            <div class="group">
-                <a href="/products/{{ $item->id }}">
-                    <div class="aspect-[3/4] overflow-hidden rounded-lg">
-                        <img 
-                            src="{{ $item->image ? asset('storage/products/' . urlencode($item->image)) : asset('storage/products/hero.jpeg') }}"
-                            class="w-full h-full object-cover group-hover:scale-105 transition"
+                <p class="uppercase tracking-widest text-xs text-gray-400 font-semibold mb-3">Select Volume</p>
+                <div class="flex gap-3" id="volume-selector">
+                    @php
+                        $volumes = ['30ml', '50ml', '100ml', '200ml'];
+                    @endphp
+                    @foreach($volumes as $vol)
+                        <button
+                            type="button"
+                            onclick="selectVolume(this)"
+                            data-volume="{{ $vol }}"
+                            class="volume-btn px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200
+                                   border-gray-300 text-gray-600 hover:border-yellow-500 hover:text-yellow-600
+                                   {{ $loop->index === 1 ? 'selected !border-yellow-500 !bg-yellow-500 !text-white' : '' }}"
                         >
-                    </div>
-
-                    <p class="mt-2 font-serif">
-                        {{ $item->name }}
-                    </p>
-
-                    <p class="text-yellow-600">
-                        ${{ $item->price }}
-                    </p>
-                </a>
+                            {{ $vol }}
+                        </button>
+                    @endforeach
+                </div>
+                <input type="hidden" name="volume" id="selected-volume" value="50ml">
             </div>
 
-            @endforeach
+            {{-- Add to Cart Form --}}
+            <form action="/cart/add/{{ $product->id }}" method="POST" class="space-y-3 pt-2">
+                @csrf
+                <input type="hidden" name="volume" id="form-volume" value="50ml">
+
+                <button
+                    type="submit"
+                    class="w-full py-4 rounded-full bg-yellow-500 text-white font-semibold uppercase tracking-widest text-sm
+                           flex items-center justify-center gap-2 shadow-md
+                           hover:bg-yellow-600 active:scale-[0.98] transition-all duration-200"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Add to Cart
+                </button>
+            </form>
+
+            {{-- Trust Badges --}}
+            <div class="grid grid-cols-2 gap-4 pt-2">
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
+                    </svg>
+                    <div>
+                        <span class="block text-xs font-bold uppercase tracking-wider mb-0.5">Free Delivery</span>
+                        <span class="text-xs text-gray-400">Complimentary 2-day shipping on all orders.</span>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <div>
+                        <span class="block text-xs font-bold uppercase tracking-wider mb-0.5">Authentic</span>
+                        <span class="text-xs text-gray-400">Directly from our artisan distillery.</span>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
+
+{{-- SCENT PROFILE --}}
+@if(
+    $product->scent_tone ||
+    $product->top_notes ||
+    $product->heart_notes ||
+    $product->base_notes
+)
+
+<div class="mt-24 border-t border-neutral-100">
+
+    {{-- SCENT PROFILE --}}
+    @if($product->scent_tone)
+
+    <div class="grid grid-cols-12 gap-6 py-6 border-b border-neutral-100">
+
+        <div class="col-span-3">
+            <h3 class="text-sm font-serif font-bold lowercase text-black">
+                scent profile
+            </h3>
+        </div>
+
+        <div class="col-span-9">
+            <p class="text-sm lowercase text-neutral-500 leading-relaxed font-light">
+                {{ strtolower($product->scent_tone) }}
+            </p>
+        </div>
+
+    </div>
+
+    @endif
+
+    {{-- TOP NOTES --}}
+    @if($product->top_notes)
+
+<div class="grid grid-cols-12 gap-6 py-6 border-b border-neutral-100">
+        <div class="col-span-3">
+            <h3 class="text-sm font-serif font-bold lowercase text-black">
+                top notes
+            </h3>
+        </div>
+
+        <div class="col-span-9">
+            <p class="text-sm lowercase text-neutral-500 leading-relaxed font-light">
+                {{ strtolower($product->top_notes) }}
+            </p>
+        </div>
+
+    </div>
+
+    @endif
+
+    {{-- HEART NOTES --}}
+    @if($product->heart_notes)
+
+<div class="grid grid-cols-12 gap-6 py-6 border-b border-neutral-100">
+        <div class="col-span-3">
+            <h3 class="text-sm font-serif font-bold lowercase text-black">
+                heart notes
+            </h3>
+        </div>
+
+        <div class="col-span-9">
+            <p class="text-sm lowercase text-neutral-500 leading-relaxed font-light">
+                {{ strtolower($product->heart_notes) }}
+            </p>
+        </div>
+
+    </div>
+
+    @endif
+
+    {{-- BASE NOTES --}}
+    @if($product->base_notes)
+
+<div class="grid grid-cols-12 gap-6 py-6 border-b border-neutral-100 color-black">
+        <div class="col-span-3">
+            <h3 class="text-sm font-serif font-bold lowercase text-black">
+                base notes
+            </h3>
+        </div>
+
+        <div class="col-span-9">
+            <p class="text-sm lowercase text-neutral-500 leading-relaxed font-light">
+                {{ strtolower($product->base_notes) }}
+            </p>
+        </div>
+
+    </div>
+
+    @endif
 
 </div>
 
+@endif
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-    const btn = document.getElementById('edit-image-btn');
-    const input = document.getElementById('product-image-input');
-    const form = document.getElementById('image-upload-form');
-    if(btn && input){
-        btn.addEventListener('click', function(){ input.click(); });
-        input.addEventListener('change', function(){
-            if(input.files.length){ form.submit(); }
-        });
-    }
-    // sub images
-    document.querySelectorAll('.edit-sub-btn').forEach(function(b){
-        b.addEventListener('click', function(){
-            const slot = b.getAttribute('data-slot');
-            const input = document.getElementById('product-' + slot + '-input');
-            const form = document.getElementById(slot + '-upload-form');
-            if(input){ input.click(); }
-            if(input){
-                input.addEventListener('change', function(){ if(input.files.length){ form.submit(); } });
-            }
-        });
-    });
-});
-</script>
+    function selectVolume(button) {
 
-@endsection
+        // lấy tất cả button volume
+        const buttons = document.querySelectorAll('.volume-btn');
+
+        // remove selected khỏi tất cả
+        buttons.forEach(btn => {
+            btn.classList.remove(
+                'selected',
+                'border-yellow-500',
+                'bg-yellow-500',
+                'text-white'
+            );
+
+            // trả về style mặc định
+            btn.classList.add(
+                'border-gray-300',
+                'text-gray-600'
+            );
+        });
+
+        // add selected cho button đang click
+        button.classList.add(
+            'selected',
+            'border-yellow-500',
+            'bg-yellow-500',
+            'text-white'
+        );
+
+        // optional: bỏ màu mặc định
+        button.classList.remove(
+            'border-gray-300',
+            'text-gray-600'
+        );
+
+        // cập nhật hidden input
+        document.getElementById('selected-volume').value =
+            button.dataset.volume;
+
+            document.getElementById('form-volume').value =
+    button.dataset.volume;
+    }
+</script>

@@ -11,18 +11,15 @@ class ProductController extends Controller
 {
     public function index()
     {
-        // Load all products but include those with external image URLs
         $products = Product::all()->filter(function ($p) {
-            if (! $p->image) {
-                return false;
-            }
             if (($p->stock ?? 0) <= 0) {
                 return false;
             }
-            if (Str::startsWith($p->image, ['http://', 'https://'])) {
-                return true;
-            }
-            return Storage::disk('public')->exists('products/' . $p->image);
+            $imgs = is_array($p->images) ? $p->images : (json_decode($p->images, true) ?: []);
+            $first = $imgs[0] ?? ($p->image ?? null);
+            if (!$first) return false;
+            if (Str::startsWith($first, ['http://', 'https://'])) return true;
+            return Storage::disk('public')->exists('products/' . $first);
         })->values();
 
         return view('products.index', compact('products'));
@@ -31,8 +28,7 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::findOrFail($id);
-        $related = Product::whereNotNull('image')
-            ->where('stock', '>', 0)
+        $related = Product::where('stock', '>', 0)
             ->where('id', '!=', $id)
             ->inRandomOrder()
             ->take(4)
@@ -55,22 +51,30 @@ class ProductController extends Controller
         if (auth()->user()->role !== 'admin') {
             abort(403);
         }
-
         $request->validate([
             'name' => 'required',
-            'price' => 'required|numeric',
-            'image' => 'required|image',
+            'price_usd' => 'required|numeric',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:5120',
         ]);
 
-        $imageName = time() . '.' . $request->image->extension();
-
-        $request->image->storeAs('products', $imageName, 'public');
+        $images = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $f) {
+                if (! $f->isValid()) continue;
+                $name = time() . '_' . 
+                    \Illuminate\Support\Str::random(6) . '.' . $f->extension();
+                $f->storeAs('products', $name, 'public');
+                $images[] = $name;
+            }
+        }
 
         Product::create([
             'name' => $request->name,
-            'price' => $request->price,
+            'price_usd' => $request->input('price_usd'),
             'brand' => $request->brand,
-            'image' => $imageName,
+            'stock' => $request->input('stock', 0),
+            'images' => $images,
         ]);
 
         return redirect('/products');
@@ -89,28 +93,22 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         $slot = $request->input('slot', 'main');
-
         $imageName = time() . '_' . $slot . '.' . $request->image->extension();
-
         $request->image->storeAs('products', $imageName, 'public');
 
-        if ($slot === 'main') {
-            if ($product->image) {
-                Storage::disk('public')->delete('products/' . $product->image);
-            }
-            $product->image = $imageName;
-        } elseif ($slot === 'sub1') {
-            if ($product->sub_image_1) {
-                Storage::disk('public')->delete('products/' . $product->sub_image_1);
-            }
-            $product->sub_image_1 = $imageName;
-        } elseif ($slot === 'sub2') {
-            if ($product->sub_image_2) {
-                Storage::disk('public')->delete('products/' . $product->sub_image_2);
-            }
-            $product->sub_image_2 = $imageName;
+        $imgs = is_array($product->images) ? $product->images : (json_decode($product->images, true) ?: []);
+
+        $index = 0;
+        if ($slot === 'sub1') $index = 1;
+        if ($slot === 'sub2') $index = 2;
+
+        // delete previous stored file if it exists and is local
+        if (!empty($imgs[$index]) && !Str::startsWith($imgs[$index], ['http://','https://'])) {
+            Storage::disk('public')->delete('products/' . $imgs[$index]);
         }
 
+        $imgs[$index] = $imageName;
+        $product->images = $imgs;
         $product->save();
 
         return redirect()->back();
@@ -170,13 +168,13 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($id);
 
-        // delete associated files if present
-        foreach (['image', 'sub_image_1', 'sub_image_2'] as $col) {
-            if (! empty($product->{$col}) && Storage::disk('public')->exists('products/' . $product->{$col})) {
-                Storage::disk('public')->delete('products/' . $product->{$col});
+        // delete associated files if present (images array)
+        $imgs = is_array($product->images) ? $product->images : (json_decode($product->images, true) ?: []);
+        foreach ($imgs as $img) {
+            if (! empty($img) && !Str::startsWith($img, ['http://','https://']) && Storage::disk('public')->exists('products/' . $img)) {
+                Storage::disk('public')->delete('products/' . $img);
             }
         }
-
         $product->delete();
 
         return redirect()->back()->with('status', 'Product deleted');

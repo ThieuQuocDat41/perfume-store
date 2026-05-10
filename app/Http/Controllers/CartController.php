@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     public function add(Request $request, $productId)
+    
     {
         $user = Auth::user();
 
@@ -31,7 +32,7 @@ class CartController extends Controller
                 'cart_id' => $cart->id,
                 'product_id' => $productId,
                 'quantity' => 1,
-                'volume' => $volume,
+                'volume' =>  $request->volume,
             ]);
         }
 
@@ -79,13 +80,75 @@ class CartController extends Controller
             return true;
         })->values();
 
-        // Tính total (guard product->price)
+        // Tính total (guard product->price_usd)
         $total = $cartItems->sum(function ($item) {
-            $price = $item->product->price ?? 0;
+            $price = $item->product->price_usd ?? ($item->product->price ?? 0);
             return $price * $item->quantity;
         });
 
         return view('cart.index', compact('cart', 'cartItems', 'total'));
     }
+    public function remove($id)
+{
+    $item = CartItem::where('id', $id)
+        ->whereHas('cart', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->first();
+
+    if (!$item) {
+        return back()->with('error', 'Cart item not found.');
+    }
+
+    $item->delete();
+
+    return back()->with('status', 'Product removed from cart.');
+}
+public function increase($id)
+{
+    $item = CartItem::where('id', $id)
+        ->whereHas('cart', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->first();
+
+    if (!$item) {
+        return back()->with('error', 'Cart item not found.');
+    }
+
+    $item->quantity += 1;
+
+    $item->save();
+
+    return back();
+}
+
+public function decrease($id)
+{
+    $item = CartItem::where('id', $id)
+        ->whereHas('cart', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->first();
+
+    if (!$item) {
+        return back()->with('error', 'Cart item not found.');
+    }
+
+    // tránh quantity âm
+    if ($item->quantity > 1) {
+
+        $item->quantity -= 1;
+
+        $item->save();
+
+    } else {
+
+        // quantity = 1 thì remove luôn
+        $item->delete();
+    }
+
+    return back();
+}
 
 }

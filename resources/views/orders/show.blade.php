@@ -5,55 +5,118 @@
 <div class="px-20 py-10">
 
     <h1 class="text-3xl font-serif mb-10">
-        Chi tiết đơn hàng #{{ $order->id }}
+        Order Details #{{ $order->id }}
     </h1>
 
     <div class="mb-4">
-        <p><strong>Ngày tạo:</strong> {{ $order->created_at->format('Y-m-d H:i') }}</p>
-        <p><strong>Khách hàng:</strong> {{ $order->user->name ?? '—' }} ({{ $order->user->email ?? '—' }})</p>
+
+        <p>
+            <strong>Order Date:</strong>
+            {{ $order->created_at->format('Y-m-d H:i') }}
+        </p>
+
+        <p>
+            <strong>Customer:</strong>
+            {{ $order->user->name ?? '—' }}
+            ({{ $order->user->email ?? '—' }})
+        </p>
+
         @if($order->user->phone)
-            <p><strong>Phone:</strong> {{ $order->user->phone }}</p>
+            <p>
+                <strong>Phone Number:</strong>
+                {{ $order->user->phone }}
+            </p>
         @endif
+
         @if($order->user->address)
-            <p><strong>Địa chỉ:</strong> {{ $order->user->address }}</p>
+            <p>
+                <strong>Delivery Address:</strong>
+                {{ $order->user->address }}
+            </p>
         @endif
-        <p><strong>Phương thức thanh toán:</strong> {{ $order->payment_method ?? 'C.O.D' }}</p>
+
+        <p>
+            <strong>Payment Method:</strong>
+            {{ $order->payment_method ?? 'Cash on Delivery (C.O.D)' }}
+        </p>
+
     </div>
 
-    <p><strong>Tổng tiền:</strong> ${{ $order->total_price }}</p>
-    <p><strong>Trạng thái:</strong> {{ $order->status }}</p>
+    <p>
+        <strong>Total Amount:</strong>
+        ${{ $order->total_price }}
+    </p>
+
+    <p>
+        <strong>Order Status:</strong>
+        {{ ucfirst($order->status) }}
+    </p>
 
     <hr class="my-6">
 
     <div class="space-y-4">
-    @foreach($order->items as $item)
 
-    <div class="flex gap-4 mb-4 items-center">
+        @foreach($order->items as $item)
 
-           <img src="{{ $item->product->image ? (Illuminate\Support\Str::startsWith($item->product->image, ['http://','https://']) ? $item->product->image : asset('storage/products/' . urlencode($item->product->image))) : asset('storage/products/hero.jpeg') }}"
-               class="w-24 h-24 object-cover bg-surface-container-low opacity-0 transition-opacity duration-700"
-               onload="this.classList.add('opacity-100')">
+        <div class="flex gap-4 mb-4 items-center">
+@php
+    $imgs = is_array($item->product->images)
+        ? $item->product->images
+        : (json_decode($item->product->images, true) ?: []);
 
-        <div class="flex-1">
-            <p class="font-medium">{{ $item->product->name }}</p>
-            <p class="text-sm text-gray-600">Số lượng: {{ $item->quantity }}</p>
+    $orderImg = $imgs[0] ?? asset('images/placeholder.png');
+
+    if (!Illuminate\Support\Str::startsWith($orderImg, ['http://', 'https://'])) {
+        $orderImg = asset('storage/' . ltrim($orderImg, '/'));
+    }
+@endphp
+
+<img
+    src="{{ $orderImg }}"
+    class="w-24 h-24 object-cover bg-surface-container-low opacity-0 transition-opacity duration-700"
+    onload="this.classList.add('opacity-100')"
+    alt="{{ $item->product->name }}"
+>
+            <div class="flex-1">
+
+                <p class="font-medium">
+                    {{ $item->product->name }}
+                </p>
+
+                <p class="text-sm text-gray-600">
+                    Quantity: {{ $item->quantity }}
+                </p>
+
+            </div>
+
+            <div class="text-right">
+
+                <p>
+                    ${{ number_format($item->price, 2) }} / item
+                </p>
+
+                <p class="font-semibold">
+                    Subtotal:
+                    ${{ number_format($item->price * $item->quantity, 2) }}
+                </p>
+
+            </div>
+
         </div>
 
-        <div class="text-right">
-            <p>${{ number_format($item->price, 2) }} / cái</p>
-            <p class="font-semibold">Tổng: ${{ number_format($item->price * $item->quantity, 2) }}</p>
-        </div>
-
-    </div>
-
-    @endforeach
+        @endforeach
 
     </div>
 
     <hr class="my-6">
 
     <div class="text-right">
-        <p class="text-lg font-semibold">Tổng thanh toán: ${{ number_format($order->total_price, 2) }}</p>
+
+        <p class="text-lg font-semibold">
+            Grand Total:
+            ${{ number_format($order->total_price, 2) }}
+        </p>
+
     </div>
 
 </div>

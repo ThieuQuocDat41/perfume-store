@@ -11,23 +11,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
+Schema::create('products', function (Blueprint $table) {
+    $table->id();
 
-            $table->string('name');
-            
-            $table->string('brand');
-            
-            $table->decimal('price',8,2);
-            
-            $table->integer('stock');
-            
-            $table->text('description')->nullable();
-            
-            $table->string('image')->nullable();
-            
-            $table->timestamps();
-        });
+    $table->string('name');
+    $table->string('brand');
+
+    $table->decimal('price_usd', 8, 2);
+
+    $table->string('gender')->nullable();
+
+    $table->integer('stock');
+
+    $table->text('short_description')->nullable();
+
+    $table->text('top_notes')->nullable();
+    $table->text('heart_notes')->nullable();
+    $table->text('base_notes')->nullable();
+
+    $table->text('images')->nullable(); // JSON string
+
+    $table->timestamps();
+});
     }
 
     /**

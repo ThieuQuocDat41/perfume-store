@@ -12,7 +12,7 @@
         <tr>
             <th class="p-3 text-left">ID</th>
             <th class="p-3 text-left">Name</th>
-            <th class="p-3 text-left">Price</th>
+            <th class="p-3 text-left">Price (USD)</th>
             <th class="p-3 text-left">Stock</th>
             <th class="p-3 text-left">Actions</th>
         </tr>
@@ -22,7 +22,7 @@
         <tr class="border-t">
             <td class="p-3">{{ $p->id }}</td>
             <td class="p-3">{{ $p->name }}</td>
-            <td class="p-3">{{ $p->price }}</td>
+            <td class="p-3">{{ number_format($p->price_usd ?? $p->price ?? 0, 2) }}</td>
             <td class="p-3">{{ $p->stock }}</td>
             <td class="p-3">
                 <a href="/admin/products/{{ $p->id }}/edit" class="px-3 py-1 bg-yellow-500 text-white rounded">Edit</a>

@@ -6,13 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'brand', 'price', 'stock', 'description', 'image', 'sub_image_1', 'sub_image_2', 'tags'];
+    protected $fillable = [
+        'name',
+        'brand',
+        'price_usd',
+        'stock',
+        'short_description',
+        'top_notes',
+        'heart_notes',
+        'base_notes',
+        'gender',
+        'images',
+        'tags',
+    ];
 
     protected $attributes = [
         'stock' => 20,
+        'gender' => 'unisex',
     ];
+
     protected $casts = [
+        'images' => 'array',
         'tags' => 'array',
+        'price_usd' => 'decimal:2',
     ];
 
     public function cartItems()

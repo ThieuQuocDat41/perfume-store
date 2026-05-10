@@ -115,3 +115,11 @@ Route::middleware($adminMiddleware)->prefix('admin')->group(function () {
     Route::post('/vouchers', [AdminController::class, 'vouchersStore']);
     Route::post('/vouchers/{id}/delete', [AdminController::class, 'vouchersDestroy']);
 });
+
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])
+    ->name('cart.remove');
+    Route::patch('/cart/{id}/increase', [CartController::class, 'increase'])
+    ->name('cart.increase');
+
+Route::patch('/cart/{id}/decrease', [CartController::class, 'decrease'])
+    ->name('cart.decrease');

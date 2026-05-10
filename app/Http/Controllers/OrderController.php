@@ -83,7 +83,8 @@ class OrderController extends Controller
         }
 
         $total = $items->sum(function ($it) {
-            return $it->product->price * $it->quantity;
+            $price = $it->product->price_usd ?? ($it->product->price ?? 0);
+            return $price * $it->quantity;
         });
 
         return view('orders.confirm', [
@@ -135,13 +136,15 @@ class OrderController extends Controller
             } else {
                 // fallback to DB prices if client total invalid
                 foreach ($items as $item) {
-                    $total += ($item->product->price * $item->quantity);
+                    $price = $item->product->price_usd ?? ($item->product->price ?? 0);
+                    $total += ($price * $item->quantity);
                 }
             }
         } else {
             // DEMO: secure mode — compute from DB prices
             foreach ($items as $item) {
-                $total += ($item->product->price * $item->quantity);
+                $price = $item->product->price_usd ?? ($item->product->price ?? 0);
+                $total += ($price * $item->quantity);
             }
         }
 
@@ -201,14 +204,14 @@ class OrderController extends Controller
 
             $order = Order::create($orderData);
 
-            foreach ($items as $item) {
+                foreach ($items as $item) {
                 $prod = $item->product;
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $prod->id,
                     'quantity' => $item->quantity,
-                    'price' => $prod->price,
+                    'price' => $prod->price_usd ?? ($prod->price ?? 0),
                     'volume' => $item->volume ?? null,
                 ]);
 

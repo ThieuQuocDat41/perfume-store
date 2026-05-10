@@ -17,7 +17,7 @@
         <input type="text" name="brand" placeholder="Thương hiệu"
                class="block mb-3 border p-2 w-full">
 
-        <input type="number" name="price" placeholder="Giá"
+        <input type="number" name="price_usd" placeholder="Giá (USD)"
                class="block mb-3 border p-2 w-full">
 
         <input type="file" name="image"

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -71,15 +73,52 @@ class AdminController extends Controller
     public function productsUpdate(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
-            'price' => 'required|numeric',
+            'price_usd' => 'required|numeric',
             'stock' => 'nullable|integer',
-            'description' => 'nullable|string',
+            'short_description' => 'nullable|string',
+            'top_notes' => 'nullable|string',
+            'heart_notes' => 'nullable|string',
+            'base_notes' => 'nullable|string',
+            'gender' => 'nullable|in:male,female,unisex',
+            'images_raw' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'tags_raw' => 'nullable|string'
         ]);
+
+        // images: comma separated URLs or paths -> array
+        $imgs = is_array($product->images) ? $product->images : (json_decode($product->images, true) ?: []);
+        if (!empty($data['images_raw'])) {
+            $parsed = array_values(array_filter(array_map('trim', explode(',', $data['images_raw']))));
+            $imgs = array_values(array_filter(array_merge($imgs, $parsed)));
+        }
+
+        // handle removal of existing images (checkboxes named remove_images[])
+        if ($request->filled('remove_images')) {
+            $toRemove = (array) $request->input('remove_images', []);
+            foreach ($toRemove as $rem) {
+                // delete local files only
+                if (!Str::startsWith($rem, ['http://','https://']) && Storage::disk('public')->exists('products/' . $rem)) {
+                    Storage::disk('public')->delete('products/' . $rem);
+                }
+                $imgs = array_values(array_filter($imgs, function($v) use ($rem){ return $v !== $rem; }));
+            }
+        }
+
+        // handle uploaded image files (append)
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $f) {
+                if (! $f->isValid()) continue;
+                $name = time() . '_' . Str::random(6) . '.' . $f->extension();
+                $f->storeAs('products', $name, 'public');
+                $imgs[] = $name;
+            }
+        }
+
+        $data['images'] = $imgs;
 
         // convert comma separated tags into array
         if (!empty($data['tags_raw'])) {
@@ -89,8 +128,8 @@ class AdminController extends Controller
             $data['tags'] = [];
         }
 
-        // remove tags_raw before filling
-        unset($data['tags_raw']);
+        // remove raw fields before filling
+        unset($data['images_raw'], $data['tags_raw']);
 
         $product->fill($data);
         $product->save();

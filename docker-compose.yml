@@ -4,6 +4,8 @@ services:
   app:
     build: .
     container_name: perfume-app
+    env_file:
+      - .env
     ports:
       - "80:8000"   # map host port 80 to container 8000
     volumes:
@@ -11,6 +13,7 @@ services:
       - storage:/app/storage
     depends_on:
       - db
+    restart: unless-stopped
 
   db:
     image: mysql:8
@@ -28,3 +31,5 @@ volumes:
   db_data:
   vendor:
   storage:
+
+  

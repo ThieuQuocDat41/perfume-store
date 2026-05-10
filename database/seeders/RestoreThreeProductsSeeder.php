@@ -13,8 +13,8 @@ class RestoreThreeProductsSeeder extends Seeder
             'name' => 'No. 5 Eau de Parfum'
         ], [
             'brand' => 'Chanel',
-            'price' => 165,
-            'image' => 'cn5.jpg',
+            'price_usd' => 165,
+            'images' => json_encode(['cn5.jpg']),
             'stock' => 10,
         ]);
 
@@ -22,8 +22,8 @@ class RestoreThreeProductsSeeder extends Seeder
             'name' => 'Eros Flame'
         ], [
             'brand' => 'Versace',
-            'price' => 102,
-            'image' => 'versace-eros.jpg',
+            'price_usd' => 102,
+            'images' => json_encode(['versace-eros.jpg']),
             'stock' => 10,
         ]);
 
@@ -31,8 +31,8 @@ class RestoreThreeProductsSeeder extends Seeder
             'name' => 'Sauvage Eau de Parfum'
         ], [
             'brand' => 'Dior',
-            'price' => 145,
-            'image' => 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800',
+            'price_usd' => 145,
+            'images' => json_encode(['https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800']),
             'stock' => 10,
         ]);
     }
