@@ -10,7 +10,7 @@ WORKDIR /app
 
 # System deps
 RUN apt-get update && apt-get install -y \
-    unzip curl libzip-dev zip git \
+    unzip curl libzip-dev zip git netcat-openbsd \
     && docker-php-ext-install zip pdo pdo_mysql \
     && rm -rf /var/lib/apt/lists/*
 

@@ -1,16 +1,18 @@
-dir /a
 #!/bin/sh
 set -e
 
-# Ensure storage symlink exists
-if [ ! -L public/storage ]; then
-  php artisan storage:link || true
-fi
+echo "Waiting DB..."
 
-# Ensure permissions (best-effort)
-if id www-data >/dev/null 2>&1; then
-  chown -R www-data:www-data storage bootstrap/cache || true
-fi
+while ! nc -z db 3306; do
+  sleep 2
+done
 
-# Start Laravel built-in server
-exec php artisan serve --host=0.0.0.0 --port=8000
+echo "DB ready!"
+
+php artisan storage:link || true
+chmod -R 775 storage bootstrap/cache || true
+
+php artisan migrate --force || true
+
+# 🔥 QUAN TRỌNG: dùng PHP built-in server đúng public/
+exec php -S 0.0.0.0:8000 -t public
